@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  db-produtos:
+    image: postgres:16.2
+    container_name: "containerBancoDeDadosProdutos"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    volumes:
+      - ./scriptBancoDeDados:/docker-entrypoint-initdb.d
+    ports:
+      - "5434:5432"
+    restart: always
+  app-produtos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: app-sistema-produtos
+    environment:
+      POSTGRES_HOST: db-produtos:5432
+    ports:
+      - "8081:8081"
+    depends_on:
+      - db-produtos
+    restart: always
