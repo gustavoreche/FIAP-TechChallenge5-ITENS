@@ -139,7 +139,7 @@
 				<artifactId>gatling-maven-plugin</artifactId>
 				<version>4.3.7</version>
 				<configuration>
-					<simulationClass>com.fiap.techchallenge4.performance.PerformanceTestSimulation</simulationClass>
+					<simulationClass>com.fiap.techchallenge5.performance.PerformanceTestSimulation</simulationClass>
 				</configuration>
 			</plugin>
 
