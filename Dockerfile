@@ -8,6 +8,6 @@ RUN mvn package -DskipTests
 
 FROM openjdk:17-jdk
 
-COPY --from=build /app/target/*.jar /app/sistema_produtos.jar
+COPY --from=build /app/target/*.jar /app/sistema_itens.jar
 
-ENTRYPOINT ["java","-jar","/app/sistema_produtos.jar"]
+ENTRYPOINT ["java","-jar","/app/sistema_itens.jar"]

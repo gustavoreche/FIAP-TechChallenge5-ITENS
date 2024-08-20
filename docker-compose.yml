@@ -1,9 +1,9 @@
 version: "3.8"
 
 services:
-  db-produtos:
+  db-itens:
     image: postgres:16.2
-    container_name: "containerBancoDeDadosProdutos"
+    container_name: "containerBancoDeDadosItens"
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
@@ -12,17 +12,17 @@ services:
     ports:
       - "5434:5432"
     restart: always
-  app-produtos:
+  app-itens:
     build:
       context: .
       dockerfile: Dockerfile
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    container_name: app-sistema-produtos
+    container_name: app-sistema-itens
     environment:
-      POSTGRES_HOST: db-produtos:5432
+      POSTGRES_HOST: db-itens:5432
     ports:
       - "8081:8081"
     depends_on:
-      - db-produtos
+      - db-itens
     restart: always

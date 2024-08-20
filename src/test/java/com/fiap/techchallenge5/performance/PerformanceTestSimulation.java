@@ -1,5 +1,6 @@
 package com.fiap.techchallenge5.performance;
 
+import com.fiap.techchallenge5.integrados.JwtUtil;
 import io.gatling.javaapi.core.ActionBuilder;
 import io.gatling.javaapi.core.ScenarioBuilder;
 import io.gatling.javaapi.core.Simulation;
@@ -16,76 +17,82 @@ public class PerformanceTestSimulation extends Simulation {
     private final HttpProtocolBuilder httpProtocol = http
             .baseUrl("http://localhost:8081");
 
-    ActionBuilder cadastraProdutoRequest = http("cadastra produto")
-            .post("/produto")
+    private final String token = JwtUtil.geraJwt();
+
+    ActionBuilder cadastraItemRequest = http("cadastra item")
+            .post("/item")
             .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + token)
             .body(StringBody("""
                               {
                                 "ean": "${ean}",
-                                "nome": "Produto Teste",
+                                "nome": "Item Teste",
                                 "preco": "15.00",
                                 "quantidade": 100
                               }
                     """))
             .check(status().is(201));
 
-    ActionBuilder atualizaProdutoRequest = http("atualiza produto")
-            .put("/produto/${ean}")
+    ActionBuilder atualizaItemRequest = http("atualiza item")
+            .put("/item/${ean}")
             .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + token)
             .body(StringBody("""
                               {
-                                "nome": "Produto Teste 20",
+                                "nome": "Item Teste 20",
                                 "preco": "15.00",
                                 "quantidade": 100
                               }
                     """))
             .check(status().is(200));
 
-    ActionBuilder deletaProdutoRequest = http("deleta produto")
-            .delete("/produto/${ean}")
+    ActionBuilder deletaItemRequest = http("deleta item")
+            .delete("/item/${ean}")
             .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + token)
             .check(status().is(200));
 
-    ActionBuilder buscaProdutoRequest = http("busca produto")
-            .get("/produto/${ean}")
+    ActionBuilder buscaItemRequest = http("busca item")
+            .get("/item/${ean}")
             .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + token)
             .check(status().is(200));
 
-    ScenarioBuilder cenarioCadastraProduto = scenario("Cadastra produto")
+    ScenarioBuilder cenarioCadastraItem = scenario("Cadastra item")
             .exec(session -> {
                 long ean = System.currentTimeMillis();
                 return session.set("ean", ean);
             })
-            .exec(cadastraProdutoRequest);
+            .exec(cadastraItemRequest);
 
-    ScenarioBuilder cenarioAtualizaProduto = scenario("Atualiza produto")
+    ScenarioBuilder cenarioAtualizaItem = scenario("Atualiza item")
             .exec(session -> {
                 long ean = System.currentTimeMillis() + 123456789L;
                 return session.set("ean", ean);
             })
-            .exec(cadastraProdutoRequest)
-            .exec(atualizaProdutoRequest);
+            .exec(cadastraItemRequest)
+            .exec(atualizaItemRequest);
 
-    ScenarioBuilder cenarioDeletaProduto = scenario("Deleta produto")
+    ScenarioBuilder cenarioDeletaItem = scenario("Deleta item")
             .exec(session -> {
                 long ean = System.currentTimeMillis() + 333333333L;
                 return session.set("ean", ean);
             })
-            .exec(cadastraProdutoRequest)
-            .exec(deletaProdutoRequest);
+            .exec(cadastraItemRequest)
+            .exec(deletaItemRequest);
 
-    ScenarioBuilder cenarioBuscaProduto = scenario("Busca produto")
+    ScenarioBuilder cenarioBuscaItem = scenario("Busca item")
             .exec(session -> {
                 long ean = System.currentTimeMillis() + 777777777L;
                 return session.set("ean", ean);
             })
-            .exec(cadastraProdutoRequest)
-            .exec(buscaProdutoRequest);
+            .exec(cadastraItemRequest)
+            .exec(buscaItemRequest);
 
 
     {
         setUp(
-                cenarioCadastraProduto.injectOpen(
+                cenarioCadastraItem.injectOpen(
                         rampUsersPerSec(1)
                                 .to(10)
                                 .during(Duration.ofSeconds(10)),
@@ -94,7 +101,7 @@ public class PerformanceTestSimulation extends Simulation {
                         rampUsersPerSec(10)
                                 .to(1)
                                 .during(Duration.ofSeconds(10))),
-                cenarioAtualizaProduto.injectOpen(
+                cenarioAtualizaItem.injectOpen(
                         rampUsersPerSec(1)
                                 .to(10)
                                 .during(Duration.ofSeconds(10)),
@@ -103,7 +110,7 @@ public class PerformanceTestSimulation extends Simulation {
                         rampUsersPerSec(10)
                                 .to(1)
                                 .during(Duration.ofSeconds(10))),
-                cenarioDeletaProduto.injectOpen(
+                cenarioDeletaItem.injectOpen(
                         rampUsersPerSec(1)
                                 .to(10)
                                 .during(Duration.ofSeconds(10)),
@@ -112,7 +119,7 @@ public class PerformanceTestSimulation extends Simulation {
                         rampUsersPerSec(10)
                                 .to(1)
                                 .during(Duration.ofSeconds(10))),
-                cenarioBuscaProduto.injectOpen(
+                cenarioBuscaItem.injectOpen(
                         rampUsersPerSec(1)
                                 .to(10)
                                 .during(Duration.ofSeconds(10)),

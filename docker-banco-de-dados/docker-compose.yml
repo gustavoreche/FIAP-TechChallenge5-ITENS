@@ -1,10 +1,10 @@
 version: "3.8"
 
 services:
-  db-produtos:
+  db-itens:
     image: postgres:16.2
     hostname: db
-    container_name: "containerBancoDeDadosProdutos"
+    container_name: "containerBancoDeDadosItens"
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root

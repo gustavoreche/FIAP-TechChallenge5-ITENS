@@ -1,4 +1,4 @@
-# FIAP-TechChallenge5-PRODUTOS
+# FIAP-TechChallenge5-ITENS
 
 ---
 
@@ -37,5 +37,5 @@ microsserviços.
 
 #### Que esse microsserviço fornece:
 
-- A aplicação fornece via HTTP informações do produto, para o microsserviço de ... .
+- A aplicação fornece via HTTP informações dos itens, para o microsserviço de ... .
 [imagem]
