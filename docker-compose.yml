@@ -21,6 +21,7 @@ services:
     container_name: app-sistema-itens
     environment:
       POSTGRES_HOST: db-itens:5432
+      JWT_SECRET: "segredoMaisSeguroDoMundo"
     ports:
       - "8081:8081"
     depends_on:
