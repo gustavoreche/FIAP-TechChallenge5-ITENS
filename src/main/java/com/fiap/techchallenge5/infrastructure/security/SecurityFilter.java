@@ -1,7 +1,6 @@
 package com.fiap.techchallenge5.infrastructure.security;
 
 import com.fiap.techchallenge5.useCase.token.TokenUseCase;
-import feign.FeignException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
