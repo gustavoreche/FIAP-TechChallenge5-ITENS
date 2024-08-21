@@ -1,6 +1,7 @@
 package com.fiap.techchallenge5.infrastructure.security;
 
 import com.fiap.techchallenge5.useCase.token.TokenUseCase;
+import feign.FeignException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,7 +42,16 @@ public class SecurityFilter extends OncePerRequestFilter {
                         .getContext()
                         .setAuthentication(authentication);
             }
-
+            else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token inválido");
+                return;
+            }
+        }
+        else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token não informado");
+            return;
         }
         filterChain.doFilter(request, response);
     }

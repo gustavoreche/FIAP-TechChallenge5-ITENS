@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.stream.Stream;
 
 import static com.fiap.techchallenge5.infrastructure.item.controller.ItemController.URL_ITEM;
@@ -75,8 +76,7 @@ public class ItemControllerIT {
                 .andExpect(MockMvcResultMatchers
                         .status()
                         .isCreated()
-                )
-                .andReturn();
+                );
 
         var item = this.itemRepository.findAll().get(0);
 
@@ -117,8 +117,7 @@ public class ItemControllerIT {
                 .andExpect(MockMvcResultMatchers
                         .status()
                         .isConflict()
-                )
-                .andReturn();
+                );
 
         var item = this.itemRepository.findAll().get(0);
 
@@ -128,6 +127,115 @@ public class ItemControllerIT {
         Assertions.assertEquals(new BigDecimal("100.00"), item.getPreco());
         Assertions.assertEquals(100L, item.getQuantidade());
         Assertions.assertNotNull(item.getDataDeCriacao());
+    }
+
+    @Test
+    public void cadastra_deveRetornar401_semToken() throws Exception {
+
+        var request = new CriaItemDTO(
+                7894900011517L,
+                "Item Teste",
+                new BigDecimal("100"),
+                100L
+        );
+        var objectMapper = this.objectMapper
+                .writer()
+                .withDefaultPrettyPrinter();
+        var jsonRequest = objectMapper.writeValueAsString(request);
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.post(URL_ITEM)
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isUnauthorized()
+                );
+
+        Assertions.assertEquals(0, this.itemRepository.findAll().size());
+    }
+
+    @Test
+    public void cadastra_deveRetornar401_tokenInvalido() throws Exception {
+
+        var request = new CriaItemDTO(
+                7894900011517L,
+                "Item Teste",
+                new BigDecimal("100"),
+                100L
+        );
+        var objectMapper = this.objectMapper
+                .writer()
+                .withDefaultPrettyPrinter();
+        var jsonRequest = objectMapper.writeValueAsString(request);
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.post(URL_ITEM)
+                        .header("Authorization", "Bearer TESTE")
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isUnauthorized()
+                );
+
+        Assertions.assertEquals(0, this.itemRepository.findAll().size());
+    }
+
+    @Test
+    public void cadastra_deveRetornar401_tokenExpirado() throws Exception {
+
+        var request = new CriaItemDTO(
+                7894900011517L,
+                "Item Teste",
+                new BigDecimal("100"),
+                100L
+        );
+        var objectMapper = this.objectMapper
+                .writer()
+                .withDefaultPrettyPrinter();
+        var jsonRequest = objectMapper.writeValueAsString(request);
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.post(URL_ITEM)
+                        .header("Authorization", "Bearer " + JwtUtil.geraJwt(LocalDateTime.now()
+                                .minusHours(3)
+                                .toInstant(ZoneOffset.of("-03:00"))))
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isUnauthorized()
+                );
+
+        Assertions.assertEquals(0, this.itemRepository.findAll().size());
+    }
+
+    @Test
+    public void cadastra_deveRetornar403_tokenSemRoleAdmin() throws Exception {
+
+        var request = new CriaItemDTO(
+                7894900011517L,
+                "Item Teste",
+                new BigDecimal("100"),
+                100L
+        );
+        var objectMapper = this.objectMapper
+                .writer()
+                .withDefaultPrettyPrinter();
+        var jsonRequest = objectMapper.writeValueAsString(request);
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.post(URL_ITEM)
+                        .header("Authorization", "Bearer " + JwtUtil.geraJwt("USER"))
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isForbidden()
+                );
+
+        Assertions.assertEquals(0, this.itemRepository.findAll().size());
     }
 
     @Test
@@ -159,8 +267,7 @@ public class ItemControllerIT {
                 .andExpect(MockMvcResultMatchers
                         .status()
                         .isOk()
-                )
-                .andReturn();
+                );
 
         var item = this.itemRepository.findAll().get(0);
 
@@ -192,10 +299,170 @@ public class ItemControllerIT {
                 .andExpect(MockMvcResultMatchers
                         .status()
                         .isNoContent()
-                )
-                .andReturn();
+                );
 
         Assertions.assertEquals(0, this.itemRepository.findAll().size());
+    }
+
+    @Test
+    public void atualiza_deveRetornar401_semToken() throws Exception {
+
+        this.itemRepository.save(ItemEntity.builder()
+                .ean(7894900011517L)
+                .nome("Item Teste")
+                .preco(new BigDecimal("100"))
+                .quantidade(100L)
+                .dataDeCriacao(LocalDateTime.now())
+                .build());
+
+        var request = new AtualizaItemDTO(
+                "Item Teste",
+                new BigDecimal("95"),
+                150L
+        );
+        var objectMapper = this.objectMapper
+                .writer()
+                .withDefaultPrettyPrinter();
+        var jsonRequest = objectMapper.writeValueAsString(request);
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.put(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isUnauthorized()
+                );
+
+        var item = this.itemRepository.findAll().get(0);
+
+        Assertions.assertEquals(7894900011517L, item.getEan());
+        Assertions.assertEquals("Item Teste", item.getNome());
+        Assertions.assertEquals(new BigDecimal("100.00"), item.getPreco());
+        Assertions.assertEquals(100L, item.getQuantidade());
+        Assertions.assertNotNull(item.getDataDeCriacao());
+    }
+
+    @Test
+    public void atualiza_deveRetornar401_tokenInvalido() throws Exception {
+
+        this.itemRepository.save(ItemEntity.builder()
+                .ean(7894900011517L)
+                .nome("Item Teste")
+                .preco(new BigDecimal("100"))
+                .quantidade(100L)
+                .dataDeCriacao(LocalDateTime.now())
+                .build());
+
+        var request = new AtualizaItemDTO(
+                "Item Teste",
+                new BigDecimal("95"),
+                150L
+        );
+        var objectMapper = this.objectMapper
+                .writer()
+                .withDefaultPrettyPrinter();
+        var jsonRequest = objectMapper.writeValueAsString(request);
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.put(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
+                        .header("Authorization", "Bearer TESTE")
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isUnauthorized()
+                );
+
+        var item = this.itemRepository.findAll().get(0);
+
+        Assertions.assertEquals(7894900011517L, item.getEan());
+        Assertions.assertEquals("Item Teste", item.getNome());
+        Assertions.assertEquals(new BigDecimal("100.00"), item.getPreco());
+        Assertions.assertEquals(100L, item.getQuantidade());
+        Assertions.assertNotNull(item.getDataDeCriacao());
+    }
+
+    @Test
+    public void atualiza_deveRetornar401_tokenExpirado() throws Exception {
+
+        this.itemRepository.save(ItemEntity.builder()
+                .ean(7894900011517L)
+                .nome("Item Teste")
+                .preco(new BigDecimal("100"))
+                .quantidade(100L)
+                .dataDeCriacao(LocalDateTime.now())
+                .build());
+
+        var request = new AtualizaItemDTO(
+                "Item Teste",
+                new BigDecimal("95"),
+                150L
+        );
+        var objectMapper = this.objectMapper
+                .writer()
+                .withDefaultPrettyPrinter();
+        var jsonRequest = objectMapper.writeValueAsString(request);
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.put(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
+                        .header("Authorization", "Bearer " + JwtUtil.geraJwt(LocalDateTime.now()
+                                .minusHours(3)
+                                .toInstant(ZoneOffset.of("-03:00"))))
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isUnauthorized()
+                );
+
+        var item = this.itemRepository.findAll().get(0);
+
+        Assertions.assertEquals(7894900011517L, item.getEan());
+        Assertions.assertEquals("Item Teste", item.getNome());
+        Assertions.assertEquals(new BigDecimal("100.00"), item.getPreco());
+        Assertions.assertEquals(100L, item.getQuantidade());
+        Assertions.assertNotNull(item.getDataDeCriacao());
+    }
+
+    @Test
+    public void atualiza_deveRetornar403_tokenSemRoleAdmin() throws Exception {
+
+        this.itemRepository.save(ItemEntity.builder()
+                .ean(7894900011517L)
+                .nome("Item Teste")
+                .preco(new BigDecimal("100"))
+                .quantidade(100L)
+                .dataDeCriacao(LocalDateTime.now())
+                .build());
+
+        var request = new AtualizaItemDTO(
+                "Item Teste",
+                new BigDecimal("95"),
+                150L
+        );
+        var objectMapper = this.objectMapper
+                .writer()
+                .withDefaultPrettyPrinter();
+        var jsonRequest = objectMapper.writeValueAsString(request);
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.put(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
+                        .header("Authorization", "Bearer " + JwtUtil.geraJwt("USER"))
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isForbidden()
+                );
+
+        var item = this.itemRepository.findAll().get(0);
+
+        Assertions.assertEquals(7894900011517L, item.getEan());
+        Assertions.assertEquals("Item Teste", item.getNome());
+        Assertions.assertEquals(new BigDecimal("100.00"), item.getPreco());
+        Assertions.assertEquals(100L, item.getQuantidade());
+        Assertions.assertNotNull(item.getDataDeCriacao());
     }
 
     @Test
@@ -216,8 +483,7 @@ public class ItemControllerIT {
                 .andExpect(MockMvcResultMatchers
                         .status()
                         .isOk()
-                )
-                .andReturn();
+                );
 
         Assertions.assertEquals(0, this.itemRepository.findAll().size());
     }
@@ -232,10 +498,126 @@ public class ItemControllerIT {
                 .andExpect(MockMvcResultMatchers
                         .status()
                         .isNoContent()
-                )
-                .andReturn();
+                );
 
         Assertions.assertEquals(0, this.itemRepository.findAll().size());
+    }
+
+    @Test
+    public void deleta_deveRetornar401_semToken() throws Exception {
+
+        this.itemRepository.save(ItemEntity.builder()
+                .ean(7894900011517L)
+                .nome("Item Teste")
+                .preco(new BigDecimal("100"))
+                .quantidade(100L)
+                .dataDeCriacao(LocalDateTime.now())
+                .build());
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.delete(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isUnauthorized()
+                );
+
+        var item = this.itemRepository.findAll().get(0);
+
+        Assertions.assertEquals(7894900011517L, item.getEan());
+        Assertions.assertEquals("Item Teste", item.getNome());
+        Assertions.assertEquals(new BigDecimal("100.00"), item.getPreco());
+        Assertions.assertEquals(100L, item.getQuantidade());
+        Assertions.assertNotNull(item.getDataDeCriacao());
+    }
+
+    @Test
+    public void deleta_deveRetornar401_tokenInvalido() throws Exception {
+
+        this.itemRepository.save(ItemEntity.builder()
+                .ean(7894900011517L)
+                .nome("Item Teste")
+                .preco(new BigDecimal("100"))
+                .quantidade(100L)
+                .dataDeCriacao(LocalDateTime.now())
+                .build());
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.delete(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
+                        .header("Authorization", "Bearer TESTE")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isUnauthorized()
+                );
+
+        var item = this.itemRepository.findAll().get(0);
+
+        Assertions.assertEquals(7894900011517L, item.getEan());
+        Assertions.assertEquals("Item Teste", item.getNome());
+        Assertions.assertEquals(new BigDecimal("100.00"), item.getPreco());
+        Assertions.assertEquals(100L, item.getQuantidade());
+        Assertions.assertNotNull(item.getDataDeCriacao());
+    }
+
+    @Test
+    public void deleta_deveRetornar401_tokenExpirado() throws Exception {
+
+        this.itemRepository.save(ItemEntity.builder()
+                .ean(7894900011517L)
+                .nome("Item Teste")
+                .preco(new BigDecimal("100"))
+                .quantidade(100L)
+                .dataDeCriacao(LocalDateTime.now())
+                .build());
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.delete(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
+                        .header("Authorization", "Bearer " + JwtUtil.geraJwt(LocalDateTime.now()
+                                .minusHours(3)
+                                .toInstant(ZoneOffset.of("-03:00"))))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isUnauthorized()
+                );
+
+        var item = this.itemRepository.findAll().get(0);
+
+        Assertions.assertEquals(7894900011517L, item.getEan());
+        Assertions.assertEquals("Item Teste", item.getNome());
+        Assertions.assertEquals(new BigDecimal("100.00"), item.getPreco());
+        Assertions.assertEquals(100L, item.getQuantidade());
+        Assertions.assertNotNull(item.getDataDeCriacao());
+    }
+
+    @Test
+    public void deleta_deveRetornar403_tokenSemRoleAdmin() throws Exception {
+
+        this.itemRepository.save(ItemEntity.builder()
+                .ean(7894900011517L)
+                .nome("Item Teste")
+                .preco(new BigDecimal("100"))
+                .quantidade(100L)
+                .dataDeCriacao(LocalDateTime.now())
+                .build());
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.delete(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
+                        .header("Authorization", "Bearer " + JwtUtil.geraJwt("USER"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isForbidden()
+                );
+
+        var item = this.itemRepository.findAll().get(0);
+
+        Assertions.assertEquals(7894900011517L, item.getEan());
+        Assertions.assertEquals("Item Teste", item.getNome());
+        Assertions.assertEquals(new BigDecimal("100.00"), item.getPreco());
+        Assertions.assertEquals(100L, item.getQuantidade());
+        Assertions.assertNotNull(item.getDataDeCriacao());
     }
 
     @Test
@@ -277,11 +659,60 @@ public class ItemControllerIT {
 
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
-                        .header("Authorization", "Bearer " + this.token)
+                        .header("Authorization", "Bearer " + JwtUtil.geraJwt("USER"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers
                         .status()
                         .isNoContent()
+                )
+                .andReturn();
+
+        Assertions.assertEquals(0, this.itemRepository.findAll().size());
+    }
+
+    @Test
+    public void busca_deveRetornar401_semToken() throws Exception {
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isUnauthorized()
+                )
+                .andReturn();
+
+        Assertions.assertEquals(0, this.itemRepository.findAll().size());
+    }
+
+    @Test
+    public void busca_deveRetornar401_tokenInvalido() throws Exception {
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
+                        .header("Authorization", "Bearer TESTE")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isUnauthorized()
+                )
+                .andReturn();
+
+        Assertions.assertEquals(0, this.itemRepository.findAll().size());
+    }
+
+    @Test
+    public void busca_deveRetornar401_tokenExpirado() throws Exception {
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
+                        .header("Authorization", "Bearer " + JwtUtil.geraJwt(LocalDateTime.now()
+                                        .minusHours(3)
+                                        .toInstant(ZoneOffset.of("-03:00"))))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers
+                        .status()
+                        .isUnauthorized()
                 )
                 .andReturn();
 
