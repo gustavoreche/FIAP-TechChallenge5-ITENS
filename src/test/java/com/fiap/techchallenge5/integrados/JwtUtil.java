@@ -21,7 +21,7 @@ public class JwtUtil {
                 .withSubject("teste")
                 .withClaim("role", "ADMIN")
                 .withExpiresAt(data)
-                .sign(Algorithm.HMAC256("segredo"));
+                .sign(Algorithm.HMAC256("segredoMaisSeguroDoMundo"));
     }
 
     public static String geraJwt(String role) {
