@@ -26,6 +26,11 @@ public class SecurityFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        if(request.getRequestURI().contains("swagger") || request.getRequestURI().contains("api-docs")){
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         final var token = this.recuperaToken(request);
         if(Objects.nonNull(token)){
             final var jwt = this.service.pegaJwt(token);
