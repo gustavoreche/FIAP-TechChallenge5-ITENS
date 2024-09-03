@@ -32,7 +32,7 @@ public class JwtUtil {
                 .withExpiresAt(LocalDateTime.now()
                         .plusHours(2)
                         .toInstant(ZoneOffset.of("-03:00")))
-                .sign(Algorithm.HMAC256("segredo"));
+                .sign(Algorithm.HMAC256("segredoMaisSeguroDoMundo"));
     }
 
 }
