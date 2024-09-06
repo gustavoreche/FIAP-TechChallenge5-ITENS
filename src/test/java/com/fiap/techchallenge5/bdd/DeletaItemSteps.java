@@ -7,6 +7,9 @@ import io.cucumber.java.pt.Entao;
 import io.cucumber.java.pt.Quando;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import org.mockserver.integration.ClientAndServer;
+import org.mockserver.model.HttpRequest;
+import org.mockserver.model.HttpResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
@@ -21,10 +24,12 @@ public class DeletaItemSteps {
 
     private Response response;
     private Long ean;
-    private final String token = JwtUtil.geraJwt();
+    private String token;
+    private ClientAndServer mockServerUsuario;
 
     @Dado("que informo um item que ja esta cadastrado")
     public void queInformoUmItemQueJaEstaCadastrado() {
+        this.token = JwtUtil.geraJwt();
         this.ean = System.currentTimeMillis();
         final var request = new CriaItemDTO(
                 this.ean,
@@ -32,6 +37,8 @@ public class DeletaItemSteps {
                 new BigDecimal("10.00"),
                 10L
         );
+
+        this.mockServerUsuario = this.criaMockServerUsuario();
 
         RestAssured.baseURI = "http://localhost:8081";
         this.response = given()
@@ -44,9 +51,19 @@ public class DeletaItemSteps {
 
     @Dado("que informo um item nao cadastrado")
     public void queInformoUmItemNaoCadastrado() {
+        this.token = JwtUtil.geraJwt();
         this.ean = System.currentTimeMillis();
+
+        this.mockServerUsuario = this.criaMockServerUsuario();
     }
 
+    @Dado("que deleto um item com um usuário que não existe no sistema")
+    public void queDeletooUmItemComUmUsuarioQueNaoExisteNoSistema() {
+        this.token = JwtUtil.geraJwt("ADMIN", "novoLogin");
+        this.ean = System.currentTimeMillis();
+
+        this.mockServerUsuario = this.criaMockServerUsuario();
+    }
 
     @Quando("deleto esse item")
     public void deletoEsseItem() {
@@ -65,15 +82,50 @@ public class DeletaItemSteps {
                 .then()
                 .statusCode(HttpStatus.OK.value())
         ;
+
+        this.mockServerUsuario.stop();
     }
 
-    @Entao("recebo uma resposta que o item nao foi cadastrado")
-    public void receboUmaRespostaQueOItemNaoFoiCadastrado() {
+    @Entao("recebo uma resposta que o item nao foi deletado")
+    public void receboUmaRespostaQueOItemNaoFoiDeletado() {
         this.response
                 .prettyPeek()
                 .then()
                 .statusCode(HttpStatus.NO_CONTENT.value())
         ;
+
+        this.mockServerUsuario.stop();
+    }
+
+    private ClientAndServer criaMockServerUsuario() {
+        final var clientAndServer = ClientAndServer.startClientAndServer(8080);
+
+        clientAndServer.when(
+                        HttpRequest.request()
+                                .withMethod("GET")
+                                .withPath("/usuario/teste")
+                                .withHeader("Authorization", "Bearer " + this.token)
+                )
+                .respond(
+                        HttpResponse.response()
+                                .withContentType(org.mockserver.model.MediaType.APPLICATION_JSON)
+                                .withStatusCode(200)
+                                .withBody(String.valueOf(true))
+                );
+
+        clientAndServer.when(
+                        HttpRequest.request()
+                                .withMethod("GET")
+                                .withPath("/usuario/novoLogin")
+                                .withHeader("Authorization", "Bearer " + this.token)
+                )
+                .respond(
+                        HttpResponse.response()
+                                .withContentType(org.mockserver.model.MediaType.APPLICATION_JSON)
+                                .withStatusCode(204)
+                );
+
+        return clientAndServer;
     }
 
 }

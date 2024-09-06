@@ -28,7 +28,8 @@ public class ItemControllerTest {
         // preparação
         var service = Mockito.mock(ItemUseCaseImpl.class);
         Mockito.when(service.cadastra(
-                                any(CriaItemDTO.class)
+                                any(CriaItemDTO.class),
+                                any(String.class)
                         )
                 )
                 .thenReturn(
@@ -44,7 +45,8 @@ public class ItemControllerTest {
                         "Item Teste",
                         new BigDecimal("100"),
                         100L
-                )
+                ),
+                "tokenTeste"
         );
 
         // avaliação
@@ -56,7 +58,8 @@ public class ItemControllerTest {
         // preparação
         var service = Mockito.mock(ItemUseCaseImpl.class);
         Mockito.when(service.cadastra(
-                        any(CriaItemDTO.class)
+                        any(CriaItemDTO.class),
+                        any(String.class)
                         )
                 )
                 .thenReturn(
@@ -72,7 +75,8 @@ public class ItemControllerTest {
                         "Item Teste",
                         new BigDecimal("100"),
                         100L
-                )
+                ),
+                "tokenTeste"
         );
 
         // avaliação
@@ -85,7 +89,8 @@ public class ItemControllerTest {
         var service = Mockito.mock(ItemUseCaseImpl.class);
         Mockito.when(service.atualiza(
                                 any(Long.class),
-                                any(AtualizaItemDTO.class)
+                                any(AtualizaItemDTO.class),
+                                any(String.class)
                         )
                 )
                 .thenReturn(
@@ -101,7 +106,8 @@ public class ItemControllerTest {
                         "Item Teste",
                         new BigDecimal("100"),
                         100L
-                )
+                ),
+                "tokenTeste"
         );
 
         // avaliação
@@ -114,7 +120,8 @@ public class ItemControllerTest {
         var service = Mockito.mock(ItemUseCaseImpl.class);
         Mockito.when(service.atualiza(
                                 any(Long.class),
-                                any(AtualizaItemDTO.class)
+                                any(AtualizaItemDTO.class),
+                        any(String.class)
                         )
                 )
                 .thenReturn(
@@ -130,7 +137,8 @@ public class ItemControllerTest {
                         "Item Teste",
                         new BigDecimal("100"),
                         100L
-                )
+                ),
+                "tokenTeste"
         );
 
         // avaliação
@@ -142,7 +150,8 @@ public class ItemControllerTest {
         // preparação
         var service = Mockito.mock(ItemUseCaseImpl.class);
         Mockito.when(service.deleta(
-                                any(Long.class)
+                                any(Long.class),
+                        any(String.class)
                         )
                 )
                 .thenReturn(
@@ -153,7 +162,8 @@ public class ItemControllerTest {
 
         // execução
         var item = controller.deleta(
-                7894900011517L
+                7894900011517L,
+                "tokenTeste"
         );
 
         // avaliação
@@ -165,7 +175,8 @@ public class ItemControllerTest {
         // preparação
         var service = Mockito.mock(ItemUseCaseImpl.class);
         Mockito.when(service.deleta(
-                                any(Long.class)
+                                any(Long.class),
+                        any(String.class)
                         )
                 )
                 .thenReturn(
@@ -176,7 +187,8 @@ public class ItemControllerTest {
 
         // execução
         var item = controller.deleta(
-                7894900011517L
+                7894900011517L,
+                "tokenTeste"
         );
 
         // avaliação
@@ -188,7 +200,8 @@ public class ItemControllerTest {
         // preparação
         var service = Mockito.mock(ItemUseCaseImpl.class);
         Mockito.when(service.busca(
-                        7894900011517L
+                        7894900011517L,
+                        "tokenTeste"
                         )
                 )
                 .thenReturn(
@@ -205,7 +218,8 @@ public class ItemControllerTest {
 
         // execução
         var item = controller.busca(
-                7894900011517L
+                7894900011517L,
+                "tokenTeste"
         );
 
         // avaliação
@@ -217,7 +231,8 @@ public class ItemControllerTest {
         // preparação
         var service = Mockito.mock(ItemUseCaseImpl.class);
         Mockito.when(service.busca(
-                        7894900011517L
+                        7894900011517L,
+                        "tokenTeste"
                         )
                 )
                 .thenReturn(
@@ -228,7 +243,8 @@ public class ItemControllerTest {
 
         // execução
         var item = controller.busca(
-                7894900011517L
+                7894900011517L,
+                "tokenTeste"
         );
 
         // avaliação
@@ -248,7 +264,8 @@ public class ItemControllerTest {
                 )
                 .when(service)
                 .cadastra(
-                        any(CriaItemDTO.class)
+                        any(CriaItemDTO.class),
+                        any(String.class)
                 );
 
         var controller = new ItemController(service);
@@ -261,7 +278,8 @@ public class ItemControllerTest {
                             nome,
                             preco,
                             quantidade
-                    )
+                    ),
+                    "tokenTeste"
             );
         });
     }
@@ -280,7 +298,8 @@ public class ItemControllerTest {
                 .when(service)
                 .atualiza(
                         any(Long.class),
-                        any(AtualizaItemDTO.class)
+                        any(AtualizaItemDTO.class),
+                        any(String.class)
                 );
 
         var controller = new ItemController(service);
@@ -293,7 +312,8 @@ public class ItemControllerTest {
                             nome,
                             preco,
                             quantidade
-                    )
+                    ),
+                    "tokenTeste"
             );
         });
     }
@@ -311,7 +331,8 @@ public class ItemControllerTest {
                 )
                 .when(service)
                 .deleta(
-                        any(Long.class)
+                        any(Long.class),
+                        any(String.class)
                 );
 
         var controller = new ItemController(service);
@@ -319,7 +340,8 @@ public class ItemControllerTest {
         // execução e avaliação
         var excecao = Assertions.assertThrows(IllegalArgumentException.class, () -> {
             controller.deleta(
-                    ean
+                    ean,
+                    "tokenTeste"
             );
         });
     }
@@ -337,7 +359,8 @@ public class ItemControllerTest {
                 )
                 .when(service)
                 .busca(
-                        any(Long.class)
+                        any(Long.class),
+                        any(String.class)
                 );
 
         var controller = new ItemController(service);
@@ -345,7 +368,8 @@ public class ItemControllerTest {
         // execução e avaliação
         var excecao = Assertions.assertThrows(IllegalArgumentException.class, () -> {
             controller.busca(
-                    ean
+                    ean,
+                    "tokenTeste"
             );
         });
     }

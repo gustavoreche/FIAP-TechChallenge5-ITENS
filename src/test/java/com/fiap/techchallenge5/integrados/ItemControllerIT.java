@@ -6,14 +6,17 @@ import com.fiap.techchallenge5.infrastructure.item.controller.dto.AtualizaItemDT
 import com.fiap.techchallenge5.infrastructure.item.controller.dto.CriaItemDTO;
 import com.fiap.techchallenge5.infrastructure.item.model.ItemEntity;
 import com.fiap.techchallenge5.infrastructure.item.repository.ItemRepository;
+import com.fiap.techchallenge5.infrastructure.usuario.client.UsuarioClient;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -42,6 +45,10 @@ public class ItemControllerIT {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    @MockBean
+    UsuarioClient clientUsuario;
+
     private final String token = JwtUtil.geraJwt();
 
     @BeforeEach
@@ -56,6 +63,10 @@ public class ItemControllerIT {
 
     @Test
     public void cadastra_deveRetornar201_salvaNaBaseDeDados() throws Exception {
+        Mockito.when(this.clientUsuario.usuarioExiste("teste", "Bearer " + this.token))
+                .thenReturn(
+                        true
+                );
 
         var request = new CriaItemDTO(
                 7894900011517L,
@@ -227,7 +238,7 @@ public class ItemControllerIT {
 
         this.mockMvc
                 .perform(MockMvcRequestBuilders.post(URL_ITEM)
-                        .header("Authorization", "Bearer " + JwtUtil.geraJwt("USER"))
+                        .header("Authorization", "Bearer " + JwtUtil.geraJwt("USER", "teste"))
                         .content(jsonRequest)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers
@@ -240,6 +251,10 @@ public class ItemControllerIT {
 
     @Test
     public void atualiza_deveRetornar200_salvaNaBaseDeDados() throws Exception {
+        Mockito.when(this.clientUsuario.usuarioExiste("teste", "Bearer " + this.token))
+                .thenReturn(
+                        true
+                );
 
         this.itemRepository.save(ItemEntity.builder()
                 .ean(7894900011517L)
@@ -448,7 +463,7 @@ public class ItemControllerIT {
 
         this.mockMvc
                 .perform(MockMvcRequestBuilders.put(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
-                        .header("Authorization", "Bearer " + JwtUtil.geraJwt("USER"))
+                        .header("Authorization", "Bearer " + JwtUtil.geraJwt("USER", "teste"))
                         .content(jsonRequest)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers
@@ -467,6 +482,10 @@ public class ItemControllerIT {
 
     @Test
     public void deleta_deveRetornar200_deletaNaBaseDeDados() throws Exception {
+        Mockito.when(this.clientUsuario.usuarioExiste("teste", "Bearer " + this.token))
+                .thenReturn(
+                        true
+                );
 
         this.itemRepository.save(ItemEntity.builder()
                 .ean(7894900011517L)
@@ -604,7 +623,7 @@ public class ItemControllerIT {
 
         this.mockMvc
                 .perform(MockMvcRequestBuilders.delete(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
-                        .header("Authorization", "Bearer " + JwtUtil.geraJwt("USER"))
+                        .header("Authorization", "Bearer " + JwtUtil.geraJwt("USER", "teste"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers
                         .status()
@@ -622,6 +641,10 @@ public class ItemControllerIT {
 
     @Test
     public void busca_deveRetornar200_buscaNaBaseDeDados() throws Exception {
+        Mockito.when(this.clientUsuario.usuarioExiste("teste", "Bearer " + this.token))
+                .thenReturn(
+                        true
+                );
 
         this.itemRepository.save(ItemEntity.builder()
                 .ean(7894900011517L)
@@ -659,7 +682,7 @@ public class ItemControllerIT {
 
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get(URL_ITEM_COM_EAN.replace("{ean}", "7894900011517"))
-                        .header("Authorization", "Bearer " + JwtUtil.geraJwt("USER"))
+                        .header("Authorization", "Bearer " + JwtUtil.geraJwt("USER", "teste"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers
                         .status()

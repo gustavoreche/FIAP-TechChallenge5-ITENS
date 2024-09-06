@@ -10,4 +10,9 @@ Funcionalidade: Teste de cadastro de item
   Cenário: Cadastra item já cadastrado
     Dado que tenho dados validos de um item que ja esta cadastrado
     Quando cadastro esse item
-    Entao recebo uma resposta que o item ja esta cadastrado
+    Entao recebo uma resposta que o item não foi cadastrado
+
+  Cenário: Cadastra item com usuário que não existe no sistema
+    Dado que cadastro um item com um usuário que não existe no sistema
+    Quando cadastro esse item
+    Entao recebo uma resposta que o item não foi cadastrado

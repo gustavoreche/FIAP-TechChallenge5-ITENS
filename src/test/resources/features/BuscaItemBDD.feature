@@ -11,3 +11,8 @@ Funcionalidade: Teste de buscar o item
     Dado que busco um item nao cadastrado
     Quando busco esse item
     Entao recebo uma resposta que o item nao foi encontrado
+
+  Cenário: Busca item com usuário que não existe no sistema
+    Dado que busco um item com um usuário que não existe no sistema
+    Quando busco esse item
+    Entao recebo uma resposta que o item nao foi encontrado

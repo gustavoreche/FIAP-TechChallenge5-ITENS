@@ -6,13 +6,17 @@ import com.fiap.techchallenge5.infrastructure.item.controller.dto.ItemDTO;
 
 public interface ItemUseCase {
 
-    boolean cadastra(final CriaItemDTO item);
+    boolean cadastra(final CriaItemDTO item,
+                     final String token);
 
     boolean atualiza(final Long ean,
-                     final AtualizaItemDTO dadosItem);
+                     final AtualizaItemDTO dadosItem,
+                     final String token);
 
-    boolean deleta(final Long ean);
+    boolean deleta(final Long ean,
+                   final String token);
 
-    ItemDTO busca(final Long ean);
+    ItemDTO busca(final Long ean,
+                  final String token);
 
 }

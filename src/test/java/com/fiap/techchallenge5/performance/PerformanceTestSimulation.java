@@ -5,6 +5,10 @@ import io.gatling.javaapi.core.ActionBuilder;
 import io.gatling.javaapi.core.ScenarioBuilder;
 import io.gatling.javaapi.core.Simulation;
 import io.gatling.javaapi.http.HttpProtocolBuilder;
+import org.mockserver.integration.ClientAndServer;
+import org.mockserver.model.HttpRequest;
+import org.mockserver.model.HttpResponse;
+import org.mockserver.model.MediaType;
 
 import java.time.Duration;
 
@@ -14,10 +18,13 @@ import static io.gatling.javaapi.http.HttpDsl.status;
 
 public class PerformanceTestSimulation extends Simulation {
 
+    private final String token = JwtUtil.geraJwt();
+    private final String tokenTeste1 = "Bearer " + this.token;
+    private final ClientAndServer mockServerUsuario = this.criaMockServerUsuario(this.tokenTeste1);
+
     private final HttpProtocolBuilder httpProtocol = http
             .baseUrl("http://localhost:8081");
 
-    private final String token = JwtUtil.geraJwt();
 
     ActionBuilder cadastraItemRequest = http("cadastra item")
             .post("/item")
@@ -134,4 +141,24 @@ public class PerformanceTestSimulation extends Simulation {
                         global().responseTime().max().lt(600),
                         global().failedRequests().count().is(0L));
     }
+
+    private ClientAndServer criaMockServerUsuario(final String token1) {
+        final var clientAndServer = ClientAndServer.startClientAndServer(8080);
+
+        clientAndServer.when(
+                        HttpRequest.request()
+                                .withMethod("GET")
+                                .withPath("/usuario/teste")
+                                .withHeader("Authorization", token1)
+                )
+                .respond(
+                        HttpResponse.response()
+                                .withContentType(MediaType.APPLICATION_JSON)
+                                .withStatusCode(200)
+                                .withBody(String.valueOf(true))
+                );
+
+        return clientAndServer;
+    }
+
 }

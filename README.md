@@ -33,12 +33,17 @@ microsserviços.
 
 #### Que esse microsserviço utiliza:
 
-- Nenhuma
-- Porém, para realizar as operações neste serviço, é necessário estar autenticado no serviço. Para se autenticar, é 
-necessário acessar o serviço de autenticação, e obter o token de acesso, via HTTP.
+- A aplicação comunica via HTTP com o microsserviço de LOGIN, para verificar se o cliente que veio
+  pelo token JWT, realmente existe na base de dados.
+
+
+- Para realizar as operações neste microsserviço, é necessário estar autenticado. Para se autenticar,
+  é necessário acessar o microsserviço de autenticação, e obter o token de acesso, via HTTP.
+
 ![img.png](integracao_utiliza.png)
 
 #### Que esse microsserviço fornece:
 
-- A aplicação fornece via HTTP informações dos itens, para o microsserviço de ... .
-[imagem]
+- A aplicação fornece via HTTP informações para verificar se o item selecionado no carrinho de compras,
+  realmente existe na base de dados, para o microsserviço de CARRINHO DE COMPRAS.
+![img.png](integracao_fornece.png)

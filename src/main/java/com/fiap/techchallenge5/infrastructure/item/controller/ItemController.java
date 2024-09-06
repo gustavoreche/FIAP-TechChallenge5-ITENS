@@ -34,8 +34,9 @@ public class ItemController {
 			summary = "Serviço para cadastrar um item"
 	)
 	@PostMapping
-	public ResponseEntity<Void> cadastra(@RequestBody @Valid final CriaItemDTO dadosItem) {
-		final var cadastrou = this.service.cadastra(dadosItem);
+	public ResponseEntity<Void> cadastra(@RequestBody @Valid final CriaItemDTO dadosItem,
+										 @RequestHeader("Authorization") final String token) {
+		final var cadastrou = this.service.cadastra(dadosItem, token);
 		if(cadastrou) {
 			return ResponseEntity
 					.status(HttpStatus.CREATED)
@@ -51,8 +52,9 @@ public class ItemController {
 	)
 	@PutMapping("/{ean}")
 	public ResponseEntity<Void> atualiza(@PathVariable("ean") final Long ean,
-										 @RequestBody @Valid final AtualizaItemDTO dadosItem) {
-		final var atualizou = this.service.atualiza(ean, dadosItem);
+										 @RequestBody @Valid final AtualizaItemDTO dadosItem,
+										 @RequestHeader("Authorization") final String token) {
+		final var atualizou = this.service.atualiza(ean, dadosItem, token);
 		if(atualizou) {
 			return ResponseEntity
 					.status(HttpStatus.OK)
@@ -67,8 +69,9 @@ public class ItemController {
 			summary = "Serviço para deletar um item"
 	)
 	@DeleteMapping("/{ean}")
-	public ResponseEntity<Void> deleta(@PathVariable("ean") final Long ean) {
-		final var deletou = this.service.deleta(ean);
+	public ResponseEntity<Void> deleta(@PathVariable("ean") final Long ean,
+									   @RequestHeader("Authorization") final String token) {
+		final var deletou = this.service.deleta(ean, token);
 		if(deletou) {
 			return ResponseEntity
 					.status(HttpStatus.OK)
@@ -83,8 +86,9 @@ public class ItemController {
 			summary = "Serviço para buscar um item"
 	)
 	@GetMapping("/{ean}")
-	public ResponseEntity<ItemDTO> busca(@PathVariable("ean") final Long ean) {
-		final var item = this.service.busca(ean);
+	public ResponseEntity<ItemDTO> busca(@PathVariable("ean") final Long ean,
+										 @RequestHeader("Authorization") final String token) {
+		final var item = this.service.busca(ean, token);
 		if(Objects.nonNull(item)) {
 			return ResponseEntity
 					.status(HttpStatus.OK)
